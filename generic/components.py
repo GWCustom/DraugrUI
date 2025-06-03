@@ -16,6 +16,7 @@ This module includes:
 """
 
 from dash import html
+import dash_bootstrap_components as dbc
 
 # UI Components
 # --------------
@@ -27,6 +28,21 @@ no_auth = [
     html.P("You are not currently logged into an active session. Please log into bfabric to continue:"),
     html.A('Login to Bfabric', href='https://fgcz-bfabric.uzh.ch/bfabric/')  # Link to the Bfabric login page.
 ]
+
+def lane_card(lane_position, container_ids):
+
+    card_content = [
+        dbc.CardHeader(f"Lane {lane_position}"),
+        dbc.CardBody(
+            [
+                html.P(f"Container IDs:"),
+            ] + [
+                html.H5(name) for name in container_ids
+            ]
+        ),
+    ]
+    return dbc.Card(card_content, style={"max-width": "25vw", "margin": "10px"})
+
 
 ## Placeholder for Authenticated User Content
 # --------------------------------------------
