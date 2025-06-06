@@ -63,6 +63,7 @@ alerts = html.Div(
     [
         dbc.Alert("Success: Draugr Initiated!", color="success", id="alert-fade-success", dismissable=True, is_open=False),
         dbc.Alert("Error: Draugr Initiation Failed!", color="danger", id="alert-fade-fail", dismissable=True, is_open=False),
+        dbc.Alert("Warning: Please select Order to DMX!", color="warning", id="alert-fade-warning", dismissable=True, is_open=False),
     ], style={"margin": "20px"}
 )
 
@@ -317,6 +318,7 @@ def update_ui(entity_data, token):
 @app.callback(
     Output("alert-fade-success", "is_open"),   # Show success alert.
     Output("alert-fade-fail", "is_open"),      # Show failure alert.
+    Output("alert-fade-warning", "is_open"),   # Show warning alert.
     [Input("Submit", "n_clicks")],             # Detect button clicks.
     [State("draugr-dropdown", "value"),        # Selected orders to DMX.
      State("draugr-flags", "value"),           # Selected Draugr flags.
@@ -351,6 +353,9 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test
         tuple: Success and failure alert states.
     """
 
+    if not draugr_orders:
+        return False, False, True  # success=False, fail=False, warning=True
+
     if True:
         entity = json.loads(entity_data) if entity_data else None
         server = entity['server'],
@@ -379,17 +384,19 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test
             "charge": []
         }
 
+        """
         # Submit the job to a queue! 
         bfabric_web_apps.q(server).enqueue(
             bfabric_web_apps.run_main_job,
             kwargs=arguments
         )
+        """
 
-        return True, False  # Show success alert, hide failure alert.
+        return True, False, False  # Show success alert, hide failure alert.
 
     else:
         print(f"Error generating Draugr command: {e}")
-        return False, True
+        return False, True, False
 
 # Here we run the app on the specified host and port.
 if __name__ == "__main__":
