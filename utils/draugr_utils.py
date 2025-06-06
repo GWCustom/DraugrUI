@@ -62,7 +62,8 @@ def generate_draugr_command(
 
     system_call = f"{PREFIX} && {draugr_command} "
 
-    system_call += " ".join(advanced_options)
+    if advanced_options:
+        system_call += " " + " ".join(advanced_options)
 
     # return system_call
     return system_call
