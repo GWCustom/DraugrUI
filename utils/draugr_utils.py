@@ -6,7 +6,6 @@ def generate_draugr_command(
     run_folder, 
     order_list, 
     disable_wizard=False, 
-    test_mode=False, 
     is_multiome=False, 
     bcl_flags=None, 
     cellranger_flags=None, 
@@ -21,7 +20,6 @@ def generate_draugr_command(
         run_folder (str): Run folder name.
         order_list (list): List of order IDs to process.
         disable_wizard (bool): Disable the wizard.
-        test_mode (bool): Enable test mode.
         is_multiome (bool): Enable multiome mode.
         bcl_flags (str): Custom Bcl2fastq flags.
         cellranger_flags (str): Custom Cellranger flags.
@@ -38,9 +36,6 @@ def generate_draugr_command(
 
     if disable_wizard:
         draugr_command += " --disable-wizard"
-    if test_mode:
-        # draugr_command += " --test-mode"
-        draugr_command += ""
     if is_multiome:
         draugr_command += " --is-multiome-run"
     if bcl_flags:

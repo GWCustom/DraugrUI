@@ -35,8 +35,6 @@ sidebar = [
     html.Br(),
     html.P(id="draugr-text-2", children="Disable Wizard"),
     daq.BooleanSwitch(id='wizard', on=False),
-    html.P(id="draugr-text-3", children="Test Mode"),
-    daq.BooleanSwitch(id='test', on=False),
     html.P(id="draugr-text-4", children="Is Multiome"),
     daq.BooleanSwitch(id='multiome', on=False),
     html.Br(),
@@ -143,10 +141,6 @@ documentation_content = [
         ), " The wizard is Draugr's internal automatic-barcode detection and correction engine. If you're confident that the correct barcodes are assigned, or the wizard is creating barcode conflicts while checking new settings, you should turn the wizard off.",
         html.Br(),html.Br(),
         html.B(
-            "Test Mode --"
-        ), " test mode is currently disabled. It will be re-enabled in a future release.",
-        html.Br(),html.Br(),
-        html.B(
             "Is Multiome --"
         ), " If you're processing a multiome run, select this option.",
         html.Br(),html.Br(),
@@ -233,7 +227,6 @@ def update_extended_entity_data(token_data):
         Output("draugr-dropdown", "disabled"),
         Output("draugr-flags", "disabled"),
         Output("wizard", "disabled"),
-        Output("test", "disabled"),
         Output("multiome", "disabled"),
         Output("bcl-input", "disabled"),
         Output("cellranger-input", "disabled"),
@@ -261,7 +254,7 @@ def update_ui(entity_data, token):
     if not token or not entity:
         # If the user is not authenticated, disable all components and show no-auth message.
         return (
-            True, True, True, True, True, True, True, True, True, no_auth  # Show no-auth message.
+            True, True, True, True, True, True, True, True, no_auth  # Show no-auth message.
         )
     
     else: 
@@ -312,7 +305,7 @@ def update_ui(entity_data, token):
             )
     
         return (
-            False, False, False, False, False, False, False, False, False, container
+            False, False, False, False, False, False, False, False, container
         )
     
 @app.callback(
@@ -323,7 +316,6 @@ def update_ui(entity_data, token):
     [State("draugr-dropdown", "value"),        # Selected orders to DMX.
      State("draugr-flags", "value"),           # Selected Draugr flags.
      State("wizard", "on"),                    # Wizard toggle state.
-     State("test", "on"),                      # Test mode toggle state.
      State("multiome", "on"),                  # Multiome toggle state.
      State("bcl-input", "value"),              # Custom Bcl2fastq flags.
      State("cellranger-input", "value"),       # Custom Cellranger flags.
@@ -332,7 +324,7 @@ def update_ui(entity_data, token):
      State("extended-entity-data", "data")],  # Authentication token and entity data.
     prevent_initial_call=True                  # Prevent callback on initial load.
 )
-def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test, multiome, bcl_flags, cellranger_flags, bases2fastq_flags, token, entity_data):
+def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, multiome, bcl_flags, cellranger_flags, bases2fastq_flags, token, entity_data):
     """
     Handles the submission of Draugr orders and options.
     It triggers the demultiplexing process and returns the success or failure alert states.
@@ -342,7 +334,6 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test
         draugr_orders (list): Selected orders to DMX.
         draugr_flags (list): Selected Draugr flags.
         wizard (bool): State of the wizard toggle.
-        test (bool): State of the test mode toggle.
         multiome (bool): State of the multiome toggle.
         bcl_flags (str): Custom Bcl2fastq flags.
         cellranger_flags (str): Custom Cellranger flags.
@@ -366,7 +357,6 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test
             run_folder=run_folder,
             order_list=draugr_orders,
             disable_wizard=wizard,
-            test_mode=test,
             is_multiome=multiome,
             bcl_flags=bcl_flags,
             cellranger_flags=cellranger_flags,
