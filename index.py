@@ -69,7 +69,7 @@ alerts = html.Div(
 app_specific_layout = dbc.Row(
         id="page-content-main",
         children=[
-            dcc.Store(id="extended-entity-data", storage_type="session"),
+            dcc.Loading(dcc.Store(id="extended-entity-data", storage_type="session")),
             dcc.Loading(alerts), 
             modal,  # Modal defined earlier.
             dbc.Col(
@@ -96,7 +96,7 @@ app_specific_layout = dbc.Row(
                             html.Div(id="auth-div")  # Placeholder for `auth-div` to be updated dynamically.
                         ],
                         style={
-                            "margin-top": "20vh",
+                            "margin-top": "2vh",
                             "margin-left": "2vw",
                             "font-size": "20px",
                             "overflow-y":"scroll",
@@ -347,7 +347,7 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, mult
     if not draugr_orders:
         return False, False, True  # success=False, fail=False, warning=True
 
-    if True:
+    try:
         entity = json.loads(entity_data) if entity_data else None
         server = entity['server'],
         run_folder = entity['datafolder']
@@ -374,17 +374,15 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, mult
             "charge": []
         }
 
-        """
         # Submit the job to a queue! 
-        bfabric_web_apps.q(server).enqueue(
+        bfabric_web_apps.q(server[0]).enqueue(
             bfabric_web_apps.run_main_job,
             kwargs=arguments
         )
-        """
 
         return True, False, False  # Show success alert, hide failure alert.
 
-    else:
+    except Exception as e:
         print(f"Error generating Draugr command: {e}")
         return False, True, False
 
