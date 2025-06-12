@@ -75,28 +75,29 @@ def extended_entity_data(token_data: dict) -> str:
         for lane in lane_samples:
             samples = []
             sample_ids = [str(elt["id"]) for elt in lane.get("sample", [])]
-            if len(sample_ids) < 100:
-                
-                #samples = wrapper.read(endpoint="sample", obj={"id": sample_ids}, max_results=None)
-                samples = L.logthis(
-                    api_call=wrapper.read,
-                    endpoint="sample",
-                    obj={"id": sample_ids},
-                    max_results=None,
-                    flush_logs=False
-                )
-
-            else:
-                for i in range(0, len(sample_ids), 100):
+            if sample_ids:
+                if len(sample_ids) < 100:
                     
-                    #samples += wrapper.read(endpoint="sample", obj={"id": sample_ids[i:i+100]}, max_results=None)
-                    samples += L.logthis(
+                    #samples = wrapper.read(endpoint="sample", obj={"id": sample_ids}, max_results=None)
+                    samples = L.logthis(
                         api_call=wrapper.read,
                         endpoint="sample",
-                        obj={"id": sample_ids[i:i+100]},
+                        obj={"id": sample_ids},
                         max_results=None,
                         flush_logs=False
                     )
+
+                else:
+                    for i in range(0, len(sample_ids), 100):
+                        
+                        #samples += wrapper.read(endpoint="sample", obj={"id": sample_ids[i:i+100]}, max_results=None)
+                        samples += L.logthis(
+                            api_call=wrapper.read,
+                            endpoint="sample",
+                            obj={"id": sample_ids[i:i+100]},
+                            max_results=None,
+                            flush_logs=False
+                        )
 
             container_ids = list(set([sample.get("container", {}).get("id") for sample in samples if sample.get("container")]))
             sample_lanes[str(lane.get("position"))] = [f"{container_id} {L.logthis(api_call=wrapper.read,endpoint='container', obj={'id': str(container_id)}, max_results=None, flush_logs=True )[0].get('name', '')}"

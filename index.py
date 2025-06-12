@@ -35,8 +35,6 @@ sidebar = [
     html.Br(),
     html.P(id="draugr-text-2", children="Disable Wizard"),
     daq.BooleanSwitch(id='wizard', on=False),
-    html.P(id="draugr-text-3", children="Test Mode"),
-    daq.BooleanSwitch(id='test', on=False),
     html.P(id="draugr-text-4", children="Is Multiome"),
     daq.BooleanSwitch(id='multiome', on=False),
     html.Br(),
@@ -64,6 +62,8 @@ alerts = html.Div(
         dbc.Alert("Success: Draugr Initiated!", color="success", id="alert-fade-success", dismissable=True, is_open=False),
         dbc.Alert("Error: Draugr Initiation Failed!", color="danger", id="alert-fade-fail", dismissable=True, is_open=False),
         dbc.Alert("Warning: Please select Order to DMX!", color="warning", id="alert-fade-warning", dismissable=True, is_open=False),
+        dbc.Alert("Warning: Missing 'server' in entity!", color="warning",  id="alert-warning-no-system", dismissable=False, is_open=False),
+        dbc.Alert("Warning: Missing 'datafolder' in entity!", color="warning",  id="alert-warning-no-data-folder", dismissable=False, is_open=False),
     ], style={"margin": "20px"}
 )
 
@@ -141,10 +141,6 @@ documentation_content = [
         html.B(
             "Disable Wizard --"
         ), " The wizard is Draugr's internal automatic-barcode detection and correction engine. If you're confident that the correct barcodes are assigned, or the wizard is creating barcode conflicts while checking new settings, you should turn the wizard off.",
-        html.Br(),html.Br(),
-        html.B(
-            "Test Mode --"
-        ), " test mode is currently disabled. It will be re-enabled in a future release.",
         html.Br(),html.Br(),
         html.B(
             "Is Multiome --"
@@ -233,13 +229,14 @@ def update_extended_entity_data(token_data):
         Output("draugr-dropdown", "disabled"),
         Output("draugr-flags", "disabled"),
         Output("wizard", "disabled"),
-        Output("test", "disabled"),
         Output("multiome", "disabled"),
         Output("bcl-input", "disabled"),
         Output("cellranger-input", "disabled"),
         Output("bases2fastq-input", "disabled"),
         Output("draugr-button", "disabled"),
-        Output("auth-div", "children")
+        Output("auth-div", "children"),
+        Output("alert-warning-no-system", "is_open"),
+        Output("alert-warning-no-data-folder", "is_open"),
     ],
     [
         Input("extended-entity-data", "data"),
@@ -249,24 +246,36 @@ def update_extended_entity_data(token_data):
     ]
 )
 def update_ui(entity_data, token):
-    
     """
     This callback updates the UI based on the authentication token and entity data.
     If the user is authenticated, it enables the UI components for selecting orders and options.
     If the user is not authenticated, it disables the components and shows a no-auth message.
     """
-
     entity = json.loads(entity_data) if entity_data else None
 
     if not token or not entity:
-        # If the user is not authenticated, disable all components and show no-auth message.
         return (
-            True, True, True, True, True, True, True, True, True, no_auth  # Show no-auth message.
+            True, True, True, True, True, True, True, True, no_auth, False, False
         )
-    
-    else: 
-        # If the user is authenticated, enable all components and show the auth-div.
 
+    elif not entity.get("server"):
+        return (
+            True, True, True, True, True, True, True, True,
+            html.Div(),
+            True,
+            False
+        )
+
+    elif not entity.get("datafolder"):
+        return (
+            True, True, True, True, True, True, True, True,
+            html.Div(),
+            False,
+            True
+        )
+
+    else: 
+        # If the user is authenticated, enable all components and show the auth-div.     
         if len(list(entity['lanes'].values())) != 8:
             container = dbc.Container(
                 [
@@ -284,7 +293,6 @@ def update_ui(entity_data, token):
                     )
                 ]
             )
-
         else:
             container = dbc.Container(
                 [
@@ -312,7 +320,7 @@ def update_ui(entity_data, token):
             )
     
         return (
-            False, False, False, False, False, False, False, False, False, container
+            False, False, False, False, False, False, False, False, container, False, False
         )
     
 @app.callback(
@@ -323,7 +331,6 @@ def update_ui(entity_data, token):
     [State("draugr-dropdown", "value"),        # Selected orders to DMX.
      State("draugr-flags", "value"),           # Selected Draugr flags.
      State("wizard", "on"),                    # Wizard toggle state.
-     State("test", "on"),                      # Test mode toggle state.
      State("multiome", "on"),                  # Multiome toggle state.
      State("bcl-input", "value"),              # Custom Bcl2fastq flags.
      State("cellranger-input", "value"),       # Custom Cellranger flags.
@@ -332,7 +339,7 @@ def update_ui(entity_data, token):
      State("extended-entity-data", "data")],  # Authentication token and entity data.
     prevent_initial_call=True                  # Prevent callback on initial load.
 )
-def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test, multiome, bcl_flags, cellranger_flags, bases2fastq_flags, token, entity_data):
+def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, multiome, bcl_flags, cellranger_flags, bases2fastq_flags, token, entity_data):
     """
     Handles the submission of Draugr orders and options.
     It triggers the demultiplexing process and returns the success or failure alert states.
@@ -342,7 +349,6 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test
         draugr_orders (list): Selected orders to DMX.
         draugr_flags (list): Selected Draugr flags.
         wizard (bool): State of the wizard toggle.
-        test (bool): State of the test mode toggle.
         multiome (bool): State of the multiome toggle.
         bcl_flags (str): Custom Bcl2fastq flags.
         cellranger_flags (str): Custom Cellranger flags.
@@ -366,7 +372,6 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test
             run_folder=run_folder,
             order_list=draugr_orders,
             disable_wizard=wizard,
-            test_mode=test,
             is_multiome=multiome,
             bcl_flags=bcl_flags,
             cellranger_flags=cellranger_flags,
@@ -389,6 +394,8 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, test
             bfabric_web_apps.run_main_job,
             kwargs=arguments
         )
+
+        print(f"Command submitted: {command}")
 
         return True, False, False  # Show success alert, hide failure alert.
 
