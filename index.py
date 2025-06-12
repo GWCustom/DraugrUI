@@ -62,6 +62,8 @@ alerts = html.Div(
         dbc.Alert("Success: Draugr Initiated!", color="success", id="alert-fade-success", dismissable=True, is_open=False),
         dbc.Alert("Error: Draugr Initiation Failed!", color="danger", id="alert-fade-fail", dismissable=True, is_open=False),
         dbc.Alert("Warning: Please select Order to DMX!", color="warning", id="alert-fade-warning", dismissable=True, is_open=False),
+        dbc.Alert("Warning: Missing 'server' in entity!", color="warning",  id="alert-warning-no-system", dismissable=False, is_open=False),
+        dbc.Alert("Warning: Missing 'datafolder' in entity!", color="warning",  id="alert-warning-no-data-folder", dismissable=False, is_open=False),
     ], style={"margin": "20px"}
 )
 
@@ -232,7 +234,9 @@ def update_extended_entity_data(token_data):
         Output("cellranger-input", "disabled"),
         Output("bases2fastq-input", "disabled"),
         Output("draugr-button", "disabled"),
-        Output("auth-div", "children")
+        Output("auth-div", "children"),
+        Output("alert-warning-no-system", "is_open"),
+        Output("alert-warning-no-data-folder", "is_open"),
     ],
     [
         Input("extended-entity-data", "data"),
@@ -242,24 +246,36 @@ def update_extended_entity_data(token_data):
     ]
 )
 def update_ui(entity_data, token):
-    
     """
     This callback updates the UI based on the authentication token and entity data.
     If the user is authenticated, it enables the UI components for selecting orders and options.
     If the user is not authenticated, it disables the components and shows a no-auth message.
     """
-
     entity = json.loads(entity_data) if entity_data else None
 
     if not token or not entity:
-        # If the user is not authenticated, disable all components and show no-auth message.
         return (
-            True, True, True, True, True, True, True, True, no_auth  # Show no-auth message.
+            True, True, True, True, True, True, True, True, no_auth, False, False
         )
-    
-    else: 
-        # If the user is authenticated, enable all components and show the auth-div.
 
+    elif not entity.get("server"):
+        return (
+            True, True, True, True, True, True, True, True,
+            html.Div(),
+            True,
+            False
+        )
+
+    elif not entity.get("datafolder"):
+        return (
+            True, True, True, True, True, True, True, True,
+            html.Div(),
+            False,
+            True
+        )
+
+    else: 
+        # If the user is authenticated, enable all components and show the auth-div.     
         if len(list(entity['lanes'].values())) != 8:
             container = dbc.Container(
                 [
@@ -277,7 +293,6 @@ def update_ui(entity_data, token):
                     )
                 ]
             )
-
         else:
             container = dbc.Container(
                 [
@@ -305,7 +320,7 @@ def update_ui(entity_data, token):
             )
     
         return (
-            False, False, False, False, False, False, False, False, container
+            False, False, False, False, False, False, False, False, container, False, False
         )
     
 @app.callback(
@@ -379,6 +394,8 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, mult
             bfabric_web_apps.run_main_job,
             kwargs=arguments
         )
+
+        print(f"Command submitted: {command}")
 
         return True, False, False  # Show success alert, hide failure alert.
 
