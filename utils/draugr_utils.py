@@ -36,8 +36,10 @@ def generate_draugr_command(
     f" --login-config {os.path.join('/home', 'illumina', 'bfabric_cred', '.bfabricpy.yml')}"
     f" --run-folder {os.path.join('/export', 'local', 'data', run_folder)}"
     f" --analysis-folder {os.path.join('/export', 'local', 'analyses')}"
-    f" --logger-rep {os.path.join('/srv', 'GT', 'analysis', 'falkonoe', 'dmx_logs', 'prod')}"
-    f" --scripts-destination {os.path.join('/srv', 'GT', 'analysis', 'datasets')}"
+    # f" --logger-rep {os.path.join('/srv', 'GT', 'analysis', 'falkonoe', 'dmx_logs', 'prod')}"
+    # f" --scripts-destination {os.path.join('/srv', 'GT', 'analysis', 'datasets')}"
+    f" --logger-rep {os.path.join('/home', 'illumina', 'DRAUGR_TESTING', 'DUMMY')}"
+    f" --scripts-destination {os.path.join('/home', 'illumina', 'DRAUGR_TESTING', 'DUMMY')}"
     )
 
     if disable_wizard:
@@ -53,20 +55,8 @@ def generate_draugr_command(
     
     draugr_command += " --reprocess-orders " + ",".join([str(elt) for elt in order_list])
 
-    SET_ENVIRON = "export OPENBLAS_NUM_THREADS=1 && export OPENBLAS_MAIN_FREE=1 &&"
-    LMOD_PROFILE = os.path.join("/usr", "local", "ngseq", "etc", "lmod_profile")
-    MODULE_PATH = os.path.join("/usr", "local", "ngseq", "etc", "modules")
-    LMOD_SETUP = f"source {LMOD_PROFILE} && export MODULEPATH={MODULE_PATH} &&"
-    # CONDA_SETUP = ". /usr/local/ngseq/miniconda3/etc/profile.d/conda.sh && conda activate gi_py3.11.5 &&"
-    CONDA_SETUP = "module load Dev/Python && conda activate gi_py3.11.5 &&"
-    MODULE_LOAD = "module load Tools/bcl2fastq && module load Aligner/CellRanger && module load Aligner/CellRangerARC && module load Tools/Bases2Fastq"
-
-    PREFIX = f"{SET_ENVIRON} {LMOD_SETUP} {CONDA_SETUP} {MODULE_LOAD}"
-
-    system_call = f"{PREFIX} && {draugr_command} "
-
     if advanced_options:
-        system_call += " " + " ".join(advanced_options)
+        draugr_command += " " + " ".join(advanced_options)
 
     # return system_call
-    return system_call
+    return draugr_command

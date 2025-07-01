@@ -394,6 +394,10 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, mult
             bfabric_web_apps.run_main_job,
             kwargs=arguments
         )
+        # bfabric_web_apps.q("light").enqueue(
+        #     bfabric_web_apps.run_main_job,
+        #     kwargs=arguments
+        # )
 
         print(f"Command submitted: {command}")
 
