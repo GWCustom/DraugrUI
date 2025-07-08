@@ -13,15 +13,13 @@ export OPENBLAS_MAIN_FREE=1
 source /usr/local/ngseq/etc/lmod_profile
 export MODULEPATH=/usr/local/ngseq/etc/modules
 
-module load Tools/bcl2fastq \
+module load Dev/uv \
+            Tools/bcl2fastq \
             Aligner/CellRanger \
             Aligner/CellRangerARC \
             Tools/Bases2Fastq
-
-eval "$(conda shell.bash hook)"   # defines the 'conda' shell function
-conda activate gi_py3.11.5
-
-source ./venv25/bin/activate  # activate the virtual environment
+# source ./venv25/bin/activate  # activate the virtual environment
 
 # 4. Launch your worker
+source ./.venv/bin/activate  # activate the virtual environment
 python3 scripts/worker.py --queues="$(hostname)"
