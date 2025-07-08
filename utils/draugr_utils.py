@@ -36,6 +36,11 @@ def generate_draugr_command(
         "production": "export BFABRICPY_CONFIG_ENV=PRODUCTION && ",
     }.get(env)
 
+    outfolder = {
+        "test": os.path.join('/export', 'local', 'analyses', 'draugr_ui_test'),
+        "production": os.path.join('/export', 'local', 'analyses')
+    }.get(env)
+
     run_folder = run_folder.lstrip('/')
 
     draugr_command = (
@@ -43,7 +48,7 @@ def generate_draugr_command(
     # f"cd {os.path.join('/export', 'local', 'analyses', 'draugr_exec')} && uv run draugr.py"
     f" --login-config {os.path.join('/home', 'illumina', 'bfabric_cred', '.bfabricpy.yml')}"
     f" --run-folder {os.path.join('/export', 'local', 'data', run_folder)}"
-    f" --analysis-folder {os.path.join('/export', 'local', 'analyses')}"
+    f" --analysis-folder {outfolder}"
     f" --logger-rep {os.path.join('/srv', 'GT', 'analysis', 'falkonoe', 'dmx_logs', 'prod')}"
     f" --scripts-destination {os.path.join('/srv', 'GT', 'analysis', 'datasets')}"
     # f" --logger-rep {os.path.join('/home', 'illumina', 'DRAUGR_TESTING', 'DUMMY')}"
