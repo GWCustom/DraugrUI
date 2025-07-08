@@ -336,10 +336,11 @@ def update_ui(entity_data, token):
      State("cellranger-input", "value"),       # Custom Cellranger flags.
      State("bases2fastq-input", "value"),
      State('url', 'search'),
-     State("extended-entity-data", "data")],  # Authentication token and entity data.
+     State("extended-entity-data", "data"),
+     State("token_data", "data")],  # Authentication token and entity data.
     prevent_initial_call=True                  # Prevent callback on initial load.
 )
-def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, multiome, bcl_flags, cellranger_flags, bases2fastq_flags, token, entity_data):
+def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, multiome, bcl_flags, cellranger_flags, bases2fastq_flags, token, entity_data, token_data):
     """
     Handles the submission of Draugr orders and options.
     It triggers the demultiplexing process and returns the success or failure alert states.
@@ -359,6 +360,8 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, mult
         tuple: Success and failure alert states.
     """
 
+    env = token_data.get("environment")
+
     if not draugr_orders:
         return False, False, True  # success=False, fail=False, warning=True
 
@@ -376,7 +379,8 @@ def handle_draugr_submission(n_clicks, draugr_orders, draugr_flags, wizard, mult
             bcl_flags=bcl_flags,
             cellranger_flags=cellranger_flags,
             bases2fastq_flags=bases2fastq_flags,
-            advanced_options=draugr_flags
+            advanced_options=draugr_flags,
+            env=env
         )
 
         arguments = {

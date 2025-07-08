@@ -9,7 +9,8 @@ def generate_draugr_command(
     bcl_flags=None, 
     cellranger_flags=None, 
     bases2fastq_flags=None,
-    advanced_options=[]
+    advanced_options=[],
+    env=None
 ):
     """
     Generate a command string for the Draugr pipeline.
@@ -24,23 +25,32 @@ def generate_draugr_command(
         cellranger_flags (str): Custom Cellranger flags.
         bases2fastq_flags (str): Custom Bases2fastq flags.
         advanced_options (list): Additional advanced options for the command.
+        env (str): Environment to use, e.g., 'test' or 'production'.
 
     Returns:
         str: Command string for the Draugr pipeline.
     """
 
+    environment_var_command = {
+        "test": "export BFABRICPY_CONFIG_ENV=TEST && ",
+        "production": "export BFABRICPY_CONFIG_ENV=PRODUCTION && ",
+    }.get(env)
+
     run_folder = run_folder.lstrip('/')
 
     draugr_command = (
-    f"python {os.path.join('/export', 'local', 'analyses', 'draugr_exec', 'draugr.py')}"
+    f"cd {os.path.join('/usr', 'local', 'ngseq', 'opt', 'draugr')} && uv run draugr.py"
+    # f"cd {os.path.join('/export', 'local', 'analyses', 'draugr_exec')} && uv run draugr.py"
     f" --login-config {os.path.join('/home', 'illumina', 'bfabric_cred', '.bfabricpy.yml')}"
     f" --run-folder {os.path.join('/export', 'local', 'data', run_folder)}"
     f" --analysis-folder {os.path.join('/export', 'local', 'analyses')}"
-    # f" --logger-rep {os.path.join('/srv', 'GT', 'analysis', 'falkonoe', 'dmx_logs', 'prod')}"
-    # f" --scripts-destination {os.path.join('/srv', 'GT', 'analysis', 'datasets')}"
-    f" --logger-rep {os.path.join('/home', 'illumina', 'DRAUGR_TESTING', 'DUMMY')}"
-    f" --scripts-destination {os.path.join('/home', 'illumina', 'DRAUGR_TESTING', 'DUMMY')}"
+    f" --logger-rep {os.path.join('/srv', 'GT', 'analysis', 'falkonoe', 'dmx_logs', 'prod')}"
+    f" --scripts-destination {os.path.join('/srv', 'GT', 'analysis', 'datasets')}"
+    # f" --logger-rep {os.path.join('/home', 'illumina', 'DRAUGR_TESTING', 'DUMMY')}"
+    # f" --scripts-destination {os.path.join('/home', 'illumina', 'DRAUGR_TESTING', 'DUMMY')}"
     )
+
+    draugr_command = environment_var_command + draugr_command
 
     if disable_wizard:
         draugr_command += " --disable-wizard"
